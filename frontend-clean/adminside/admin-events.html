@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Participants | GeethsConnect</title>
+<link rel="stylesheet" href="../common/css/style.css">
+</head>
+
+<body>
+
+<header class="navbar">
+<div class="container nav-flex">
+<h2 class="logo">Geethayaana</h2>
+
+<nav class="nav-links">
+<a href="admindashboard.html">Dashboard</a>
+<a href="addevent.html">Add Event</a>
+<a href="uploadphotos.html">Upload Photos</a>
+<a href="/GEETHAYAANA/frontend-clean/studentside/login.html">Logout</a>
+</nav>
+</div>
+</header>
+
+<section class="container" style="padding:30px 0;">
+
+<h1 style="margin-bottom:20px;">Event Participants</h1>
+
+<div id="eventsContainer"></div>
+
+</section>
+
+<footer class="footer">
+<div class="container">
+© 2026 GeethsConnect
+</div>
+</footer>
+
+<script>
+
+async function loadEvents(){
+
+try{
+const res = await fetch("/geethayana/backend/getEvents.php");
+const events = await res.json();
+
+const container = document.getElementById("eventsContainer");
+container.innerHTML = "";
+
+events.forEach(event => {
+
+container.innerHTML += `
+<div class="card" style="margin-bottom:20px;">
+<h3>${event.title}</h3>
+<p>Date: ${event.date}</p>
+<p>Time: ${event.time}</p>
+
+<button class="btn orange"
+onclick="downloadParticipants('${event.id}')">
+Download Participants
+</button>
+</div>
+`;
+
+});
+
+}catch(err){
+console.log(err);
+}
+
+}
+
+function downloadParticipants(eventId){
+window.open(`/geethayana/downloadParticipants.php?eventId=${eventId}`);
+}
+
+loadEvents();
+
+</script>
+
+</body>
+</html>

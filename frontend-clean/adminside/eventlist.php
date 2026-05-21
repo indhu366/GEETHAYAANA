@@ -1,8 +1,10 @@
 <?php
 session_start();
+$isSuperAdmin = $_SESSION['isSuperAdmin'] ?? false;
+$email = $_SESSION['adminEmail'];
 $loggedAdmin = $_SESSION['adminEmail'];
 
-$conn = new mysqli("localhost","root","","geethayana",3307);
+include("../../backend/db.php");
 
 if ($conn->connect_error) {
     die("Connection failed");
@@ -45,20 +47,13 @@ gap:20px;
 
 <body>
 
-<header class="navbar">
-<div class="container nav-flex">
+<div class="topbar">
 
-<h2 class="logo">Geethayaana</h2>
 
-<nav class="nav-links">
-<a href="admindashboard.php">Dashboard</a>
-<a href="addevent.php">Add Event</a>
-<a href="uploadphotos.html">Upload Photos</a>
-<a href="/GEETHAYAANA/frontend-clean/studentside/login.html">Logout</a>
-</nav>
+  <h2 class="logo-text">GEETHAYAANA 2026</h2>
+  <a href="admindashboard.php">Back</a>
 
 </div>
-</header>
 
 <section class="container" style="padding:30px 0;">
 <div class="card">
@@ -95,7 +90,7 @@ onclick="window.location.href=\'participateslist.php?eventId='.$row['id'].'\'">
 
 <!-- ✅ EDIT BUTTON -->
 '.(
-$row['createdBy'] == $loggedAdmin
+($row['createdBy'] == $loggedAdmin || $isSuperAdmin)
 ? '<a href="editEvent.php?id='.$row['id'].'"
 class="btn"
 onclick="event.stopPropagation();">
@@ -109,7 +104,7 @@ Not Allowed
 ).'
 
 '.(
-$row['createdBy'] == $loggedAdmin
+($row['createdBy'] == $loggedAdmin || $isSuperAdmin)
 ? '<button class="btn outline"
 onclick="deleteEvent('.$row['id'].'); event.stopPropagation();">
 Delete Event
@@ -166,6 +161,11 @@ fetch("/GEETHAYAANA/backend/deleteEvent.php?id=" + id)
     alert("❌ Error deleting event");
 });
 }
+
+function toggleSidebar(){
+  document.getElementById("sidebar").classList.toggle("active");
+}
+
 </script>
 
 <footer class="footer">

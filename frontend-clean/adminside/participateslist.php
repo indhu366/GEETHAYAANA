@@ -1,5 +1,5 @@
 <?php
-include "../../backend/db.php";
+include("../../backend/db.php");
 
 $eventId = $_GET['eventId'] ?? "";
 
@@ -9,8 +9,11 @@ if(!$eventId){
 
 $eventRes = $conn->query("SELECT title FROM events WHERE id='$eventId'");
 $event = $eventRes->fetch_assoc();
+$eventDetails = $conn->query("SELECT participationType FROM events WHERE id='$eventId'");
+$eventInfo = $eventDetails->fetch_assoc();
+$isTeamEvent = ($eventInfo['participationType'] === 'team');
 
-$result = $conn->query("SELECT * FROM registrations WHERE eventId='$eventId'");
+$result = $conn->query("SELECT * FROM registrations WHERE eventId='$eventId' ORDER BY teamId");
 ?>
 
 <!DOCTYPE html>
@@ -23,6 +26,7 @@ $result = $conn->query("SELECT * FROM registrations WHERE eventId='$eventId'");
 
 
 <style>
+    
 table{
 width:100%;
 border-collapse: collapse;
@@ -68,6 +72,7 @@ Total Participants: <?php echo $result->num_rows; ?>
 <table id="participantsTable">
 <thead>
 <tr>
+<?php if($isTeamEvent){ echo "<th>Team Name</th>"; } ?>
 <th>Name</th>
 <th>USN</th>
 <th>Department</th>
@@ -79,27 +84,63 @@ Total Participants: <?php echo $result->num_rows; ?>
 <tbody>
 
 <?php
-$participantsData = [];
 
-while($row = $result->fetch_assoc()){
-    $role = ($row['teamId']) ? "Team" : "Individual";
+if(!$isTeamEvent){
 
-    echo "<tr>
-    <td>{$row['name']}</td>
-    <td>{$row['usn']}</td>
-    <td>{$row['department']}</td>
-    <td>{$row['phone']}</td>
-    <td>$role</td>
-    </tr>";
+    // ✅ INDIVIDUAL EVENT → row by row
+    while($row = $result->fetch_assoc()){
+        echo "<tr>
+        <td>{$row['name']}</td>
+        <td>{$row['usn']}</td>
+        <td>{$row['department']}</td>
+        <td>{$row['phone']}</td>
+        <td>Individual</td>
+        </tr>";
+    }
 
-    $participantsData[] = [
-        "name"=>$row['name'],
-        "usn"=>$row['usn'],
-        "department"=>$row['department'],
-        "phone"=>$row['phone'],
-        "role"=>$role
-    ];
+} else {
+
+    // ✅ TEAM EVENT → group data
+    $teams = [];
+
+    while($row = $result->fetch_assoc()){
+
+        $key = !empty($row['teamId']) ? $row['teamId'] : $row['team_name'];
+
+        if(!isset($teams[$key])){
+            $teams[$key] = [
+                "names" => [],
+                "usns" => [],
+                "depts" => [],
+                "team_name" => $row['team_name'] ?? $row['teamId'],
+                "phone" => "",
+                "role" => "Team"
+            ];
+        }
+
+        // ✅ take only leader phone (first non-empty)
+        if(!empty($row['phone']) && empty($teams[$key]['phone'])){
+            $teams[$key]['phone'] = $row['phone'];
+        }
+
+        $teams[$key]["names"][] = $row['name'];
+        $teams[$key]["usns"][] = $row['usn'];
+        $teams[$key]["depts"][] = $row['department'];
+    }
+
+    foreach($teams as $team){
+        echo "<tr>
+        <td>{$team['team_name']}</td>
+        <td>".implode('<br>', $team['names'])."</td>
+        <td>".implode('<br>', $team['usns'])."</td>
+        <td>".implode('<br>', $team['depts'])."</td>
+        <td>{$team['phone']}</td>
+        <td>{$team['role']}</td>
+        </tr>";
+    }
+
 }
+
 ?>
 
 </tbody>

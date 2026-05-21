@@ -7,29 +7,52 @@
 </head>
 <body>
 
+<div id="portalClosedBox" class="portal-closed" style="display:none;">
+  <div class="message-box">
+    <h1>🚫 PORTAL CLOSED</h1>
+    <p>Contact admin</p>
+    <p>Wait till Geethayaana 2027</p>
+  </div>
+</div>
+
 <div class="login-container">
   <div class="login-card">
 
     <h2>Login</h2>
 
     <!-- LOGIN FORM -->
-    <form action="/GEETHAYAANA/backend/loginUser.php" method="POST">
+    <form action="../../backend/loginUser.php" method="POST">
 
   <input type="email" name="email" placeholder="Email" required>
 
   <input type="password" name="password" placeholder="Password" required>
 
   <button type="submit">Login</button>
+  
+  <p style="text-align:center; margin-top:10px;">
+  <a href="forgotpassword.html">Forgot Password?</a>
+</p>
 
 </form>
 
     <p>
       Don't have an account?
-      <a href="/GEETHAYAANA/frontend-clean/studentside/register2.html">Register</a>
+      <a href="register2.html">Register</a>
     </p>
 
   </div>
 </div>
 
 </body>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+
+console.log("closed param:", params.get("closed")); // DEBUG
+
+if(params.get("closed") === "1"){
+    document.getElementById("portalClosedBox").style.display = "flex";
+}
+</script>
+
 </html>

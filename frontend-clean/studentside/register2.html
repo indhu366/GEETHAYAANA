@@ -7,23 +7,55 @@
   <link rel="stylesheet" href="../common/css/style.css" />
 
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      height: 100vh;
-      background: url("https://media.collegedekho.com/media/img/institute/crawled_images/GSSSM.jpg") no-repeat center center/cover;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: Arial, sans-serif;
-    }
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
 
-    .auth-wrap {
+  background: url('../common/images/gy26.png') no-repeat center;
+  background-size: 60%;
+  background-color: #f2f2f4;
+}
+
+@media (max-width: 768px) {
+
+  body {
+    background-size: 80%;  /* smaller on phone */
+  }
+
+  .login-card {
+    width: 90%;
+    padding: 18px;
+  }
+
+  .login-card h2 {
+    font-size: 20px;
+  }
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 15px;
+}
+
+.login-card {
+  width: 320px;
+  max-width: 100%;
+  padding: 20px;
+  border-radius: 15px;
+
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(12px);
+}
+.auth-wrap {
       width: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
-    }
+}
 
     .auth-card {
       backdrop-filter: blur(12px);
@@ -39,7 +71,7 @@
     .auth-card p,
     .auth-card label,
     .auth-card a {
-      color: #ffffff;
+      color: #0e0b0b;
     }
 
     .auth-card input {
@@ -48,7 +80,7 @@
       margin-bottom: 15px;
       border: 1px solid rgba(255, 255, 255, 0.4);
       background: rgba(255, 255, 255, 0.15);
-      color: #fff;
+      color: #100e0e;
       outline: none;
     }
 
@@ -81,9 +113,32 @@
     }
 
     .small-link a {
-      color: #030303;
+      color: #040404;
       text-decoration: none;
     }
+
+    button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(45deg, #d4d1cd, #ded5d3);
+  color: rgb(23, 17, 17);
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(45deg, #ff3d00, #ff7a18);
+}
+
+button:active {
+  transform: scale(0.98);
+}
 
   </style>
 
@@ -101,11 +156,19 @@
   <input type="text" name="name" placeholder="Name" required>
   <input type="email" name="email" placeholder="Email" required>
 
-  <select name="role" required>
-    <option value="">Select Role</option>
-    <option value="student">Student</option>
-    <option value="admin">Faculty</option>
-  </select>
+ <select name="role" id="role" onchange="toggleEmpId()" required>
+  <option value="">Select Role</option>
+  <option value="student">Student</option>
+  <option value="admin">Faculty</option>
+</select>
+
+<div id="empIdField" style="display:none;">
+  <label>Employee ID</label>
+  <div style="display:flex;">
+    <span style="padding:10px;background:#ccc;">E</span>
+    <input type="text" name="empId" id="empIdInput" placeholder="Enter digits" pattern="[0-9]+">
+  </div>
+</div>
 
   <input type="password" name="password" placeholder="Password" required>
 
@@ -117,9 +180,7 @@
       Already registered? <a href="login.html">Login</a>
     </div>
 
-    <div class="small-link">
-      <a href="../index.html">⬅ Back to Home</a>
-    </div>
+
 
   </div>
 </div>
@@ -131,6 +192,22 @@
     <a href="login.html">Login</a>
   </div>
 </div>
+
+<script>
+function toggleEmpId(){
+  const role = document.getElementById("role").value;
+  const empField = document.getElementById("empIdField");
+  const empInput = document.getElementById("empIdInput");
+
+  if(role === "admin"){
+    empField.style.display = "block";
+    empInput.required = true;
+  } else {
+    empField.style.display = "none";
+    empInput.required = false;
+  }
+}
+</script>
 
 </body>
 </html>

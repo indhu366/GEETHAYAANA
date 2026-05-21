@@ -1,5 +1,5 @@
 <?php
-$conn = new mysqli("localhost", "root", "", "geethayana",3307);
+include("db.php");
 
 $id = $_GET['id'];
 

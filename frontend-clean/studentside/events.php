@@ -1,5 +1,5 @@
 <?php
-$conn = new mysqli("localhost", "root", "", "geethayana", 3307);
+include("../../backend/db.php");
 
 if ($conn->connect_error) {
     die("DB Connection Failed");
@@ -18,36 +18,129 @@ $result = $conn->query("SELECT * FROM events");
 
 <style>
 #searchInput {
-    width: 60% !important;
-    max-width: 800px;
-    display: block;
-    margin: 0 auto 20px auto;
+  width: 60% !important;
+  max-width: 800px;
+  display: block;
+  margin: 0 auto 20px auto;
 }
 
 #searchInput:focus {
-    border-color: #ff7a00;
-    box-shadow: 0 0 5px rgba(255, 122, 0, 0.5);
+  border-color: #ff7a00;
+  box-shadow: 0 0 5px rgba(255, 122, 0, 0.5);
 }
 
 #searchInput::placeholder {
-    color: #888;
+  color: #888;
+}
+
+.logo{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:20px;
+  font-weight:bold;
+  color:#ff7a00;
+}
+
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:relative; /* IMPORTANT */
+  background:#111;
+  color:#fff;
+  padding:12px 20px;
+}
+
+.menu-btn{
+  font-size:24px;
+  cursor:pointer;
+}
+
+/* SIDEBAR */
+.sidebar{
+  position:fixed;
+  top:0;
+  left:-220px;
+  width:200px;
+  height:100%;
+  background:#222;
+  padding-top:60px;
+  transition:0.3s;
+  z-index:1000;
+}
+
+.sidebar a{
+  display:block;
+  color:#fff;
+  padding:12px 20px;
+  text-decoration:none;
+}
+
+.sidebar a:hover{
+  background:#444;
+}
+
+/* PROFILE */
+.profile-dropdown{
+  display:none;
+  position:absolute;
+  right:0;
+  top:45px;
+  background:#ffffff;
+  color:#111;
+  padding:15px;
+  border-radius:12px;
+  width:220px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.2);
+  z-index:1000;
+  animation:fadeIn 0.2s ease;
+}
+
+.profile-dropdown p{
+  margin:5px 0;
+  font-size:14px;
+}
+
+.profile-dropdown strong{
+  font-size:16px;
+}
+
+.profile-dropdown a{
+  display:block;
+  padding:10px;
+  margin-top:5px;
+  border-radius:8px;
+  text-decoration:none;
+  color:#111;
+  transition:0.2s;
+}
+
+.profile-dropdown a:hover{
+  background:#f2f2f2;
+}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(-10px);}
+  to{opacity:1; transform:translateY(0);}
 }
 </style>
 </head>
 <body>
 
 <!-- Navbar -->
-<header class="navbar">
-<div class="container nav-flex">
-<h2 class="logo">GEETHAYAANA2026</h2>
-<nav class="nav-links">
-<a href="studentdashboard.php">Dashboard</a>
-<a href="events.php">Events</a>
-<a href="gallery.html">Gallery</a>
-<a class="btn outline" href="index.html">Logout</a>
-</nav>
+<div class="topbar">
+  <span class="menu-btn" onclick="toggleSidebar()">☰</span>
+
+  <h2 class="logo">GEETHAYAANA 2026</h2>
 </div>
-</header>
+
+<div class="sidebar" id="sidebar">
+  <a href="studentdashboard.php">🏠 Dashboard</a>
+  <a href="events.php">🎯 Events</a>
+  <a href="gallery.html">🖼️ Gallery</a>
+  <a href="myevents.php">📅 My Events</a>
+</div>
 
 <section class="container" style="padding:30px 0;">
 <div class="card">
@@ -60,7 +153,7 @@ $result = $conn->query("SELECT * FROM events");
 style="width:100%;padding:10px;margin-bottom:20px;">
 
 <section class="container" style="margin-bottom:40px;">
-<div class="grid" style="grid-template-columns:repeat(2,1fr);gap:14px;">
+<div id="eventList" class="grid" style="grid-template-columns:repeat(2,1fr);gap:14px;">
 
 <?php
 if($result->num_rows == 0){
@@ -120,6 +213,13 @@ document.getElementById("searchInput").addEventListener("keyup", function() {
         }
     });
 });
+
+
+function toggleSidebar(){
+  let sidebar = document.getElementById("sidebar");
+  sidebar.style.left = (sidebar.style.left === "0px") ? "-220px" : "0px";
+}
+
 </script>
 
 <footer class="footer">

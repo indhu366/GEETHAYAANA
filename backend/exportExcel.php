@@ -1,4 +1,8 @@
 <?php
+session_start();
+
+$isSuperAdmin = $_SESSION['isSuperAdmin'] ?? false;
+$loggedAdmin = $_SESSION['adminEmail'] ?? '';
 require '../vendor/autoload.php';
 include "db.php";
 
@@ -16,10 +20,27 @@ if(!$eventId){
 }
 
 /* FETCH DATA */
-$eventRes = $conn->query("SELECT title FROM events WHERE id='$eventId'");
+$eventRes = $conn->query("SELECT title, faculty, students FROM events WHERE id='$eventId'");
 $event = $eventRes->fetch_assoc();
 
-$result = $conn->query("SELECT * FROM registrations WHERE eventId='$eventId'");
+if($isSuperAdmin){
+    // ✅ superadmin → all events
+    $result = $conn->query("
+        SELECT r.* 
+        FROM registrations r
+        WHERE r.eventId='$eventId'
+        ORDER BY r.teamId
+    ");
+} else {
+    // ✅ faculty → only their event
+    $result = $conn->query("
+        SELECT r.* 
+        FROM registrations r
+        JOIN events e ON r.eventId = e.id
+        WHERE r.eventId='$eventId' AND e.createdBy='$loggedAdmin'
+        ORDER BY r.teamId
+    ");
+}
 
 /* CREATE EXCEL */
 $spreadsheet = new Spreadsheet();
@@ -45,14 +66,20 @@ $row = 9;
 
 /* EVENT NAME */
 $sheet->setCellValue('A'.$row, 'Event: ' . $event['title']);
-$row += 2; // space before table
+$row++;
+
+$sheet->setCellValue('A'.$row, 'Faculty Coordinators: ' . $event['faculty']);
+$row++;
+
+$sheet->setCellValue('A'.$row, 'Student Coordinators: ' . $event['students']);
+$row += 2;// space before table
 
 $sheet->mergeCells('A'.$row.':E'.$row);
 
 $row += 1; 
 
 /* HEADERS */
-$headers = ["Name","USN","Department","Phone","Role"];
+$headers = ["Name","Phone","Department","Role"];
 
 foreach($extraCols as $col){
     $headers[] = $col;
@@ -67,20 +94,40 @@ foreach($headers as $h){
 $row++;
 
 /* DATA */
+$teams = [];
+
 while($r = $result->fetch_assoc()){
-    $role = ($r['teamId']) ? "Team" : "Individual";
 
-    $sheet->setCellValue('A'.$row, $r['name']);
-    $sheet->setCellValue('B'.$row, $r['usn']);
-    $sheet->setCellValue('C'.$row, $r['department']);
+    $key = $r['teamId'] ? $r['teamId'] : $r['usn'];
 
-    $sheet->setCellValueExplicit(
-        'D'.$row,
-        $r['phone'],
-        \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING
-    );
+    if(!isset($teams[$key])){
+        $teams[$key] = [
+            "team_name" => $r['team_name'] ?? $r['teamId'],
+            "names" => [],
+            "usns" => [],
+            "depts" => [],
+            "phones" => [],
+            "role" => ($r['teamId']) ? "Team" : "Individual"
+        ];
+    }
 
-    $sheet->setCellValue('E'.$row, $role);
+    $teams[$key]["names"][] = $r['name'];
+    $teams[$key]["usns"][] = $r['usn'];
+    $teams[$key]["depts"][] = $r['department'];
+    $teams[$key]["phones"][] = $r['phone'];
+}
+foreach($teams as $team){
+
+    $sheet->setCellValue('A'.$row, implode("\n", $team['names']));
+    $sheet->setCellValue('D'.$row, implode("\n", $team['phones']));
+    $sheet->setCellValue('C'.$row, implode("\n", $team['depts']));
+    $sheet->setCellValue('E'.$row, $team['role']);
+
+
+    $sheet->getStyle('A'.$row.':D'.$row)->getAlignment()->setWrapText(true);
+
+    // Wrap text (IMPORTANT for newline)
+    $sheet->getStyle('A'.$row.':E'.$row)->getAlignment()->setWrapText(true);
 
     /* EXTRA COLUMNS */
     $colLetter = 'F';
@@ -89,9 +136,8 @@ while($r = $result->fetch_assoc()){
         $colLetter++;
     }
 
-    $row++; // 🔥 VERY IMPORTANT
+    $row++;
 }
-
 /* DOWNLOAD */
 $fileName = ($event['title'] ?? 'event') . "_participants.xlsx";
 

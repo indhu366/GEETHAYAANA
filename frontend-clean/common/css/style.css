@@ -180,4 +180,163 @@ box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 
 
+  
+/* TOPBAR */
+.logo{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:20px;
+  font-weight:bold;
+  color:#ff7a00;
+}
 
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:relative; /* IMPORTANT */
+  background:#111;
+  color:#fff;
+  padding:12px 20px;
+}
+
+.menu-btn{
+  font-size:24px;
+  cursor:pointer;
+}
+
+/* SIDEBAR */
+.sidebar{
+  position:fixed;
+  top:0;
+  left:-220px;
+  width:200px;
+  height:100%;
+  background:#222;
+  padding-top:60px;
+  transition:0.3s;
+  z-index:1000;
+}
+
+.sidebar a{
+  display:block;
+  color:#fff;
+  padding:12px 20px;
+  text-decoration:none;
+}
+
+.sidebar a:hover{
+  background:#444;
+}
+
+/* PROFILE */
+.profile-dropdown{
+  display:none;
+  position:absolute;
+  right:0;
+  top:45px;
+  background:#ffffff;
+  color:#111;
+  padding:15px;
+  border-radius:12px;
+  width:220px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.2);
+  z-index:1000;
+  animation:fadeIn 0.2s ease;
+}
+
+.profile-dropdown p{
+  margin:5px 0;
+  font-size:14px;
+}
+
+.profile-dropdown strong{
+  font-size:16px;
+}
+
+.profile-dropdown a{
+  display:block;
+  padding:10px;
+  margin-top:5px;
+  border-radius:8px;
+  text-decoration:none;
+  color:#111;
+  transition:0.2s;
+}
+
+.profile-dropdown a:hover{
+  background:#f2f2f2;
+}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(-10px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+/* SIDEBAR DEFAULT */
+.sidebar{
+  position:fixed;
+  top:0;
+  left:-220px;
+  width:200px;
+  height:100%;
+  background:#222;
+  padding-top:60px;
+  transition:0.3s;
+  z-index:1000;
+}
+
+/* ✅ WHEN ACTIVE */
+.sidebar.active{
+  left:0;
+}
+
+/* PROFILE DROPDOWN */
+.profile-dropdown{
+  display:none;
+}
+
+/* ✅ WHEN CLICKED */
+.profile-dropdown.show{
+  display:block;
+}
+
+/* PROFILE ICON POSITION */
+.profile{
+  position:absolute;
+  right:20px;
+  cursor:pointer;
+  font-size:20px;
+}
+
+/* ✅ LOGO WITH IMAGE */
+
+.profile-dropdown.show{
+  display:block;
+}
+
+.topbar{
+  position:relative;
+}
+
+.logo-box{
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.logo-img{
+width: 50px;
+height: 50px;
+mix-blend-mode: multiply;
+}
+
+.logo-text{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:22px;
+  font-weight:bold;
+  color:#F97316;
+}

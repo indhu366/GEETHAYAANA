@@ -1,5 +1,7 @@
 <?php
-$conn = new mysqli("localhost", "root", "", "geethayana", 3307);
+include("../../backend/db.php");
+
+ 
 
 if ($conn->connect_error) {
     die("Connection failed");
@@ -19,24 +21,23 @@ $event = $result->fetch_assoc();
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Event Details | GeethsConnect</title>
+<title>Event Details </title>
 <link rel="stylesheet" href="../common/css/style.css">
 </head>
 
 <body>
 
-<header class="navbar">
-<div class="container nav-flex">
-<h2 class="logo">GeethsConnect</h2>
-<nav class="nav-links">
-<a href="studentdashboard.html">Dashboard</a>
-<a href="events.php">Events</a>
-<a href="gallery.php">Gallery</a>
-<a href="feedback.php">Feedback</a>
-<a class="btn outline" href="index.html">Logout</a>
-</nav>
+<div class="topbar">
+  <span class="menu-btn" onclick="toggleSidebar()">☰</span>
+
+  <h2 class="logo">GEETHAYAANA 2026</h2>
 </div>
-</header>
+<div class="sidebar" id="sidebar">
+  <a href="studentdashboard.php">🏠 Dashboard</a>
+  <a href="events.php">🎯 Events</a>
+  <a href="gallery.html">🖼️ Gallery</a>
+  <a href="myevents.php">📅 My Events</a>
+</div>
 
 <section class="container" style="padding:30px 0;">
 
@@ -109,7 +110,7 @@ if($event['participationType']=="team"){
 <!-- DOCUMENT -->
 <div style="margin-top:20px;">
 <?php if(!empty($event['file'])){ ?>
-<a href="../backend/uploads/<?php echo $event['file']; ?>" target="_blank" class="btn orange">
+<a href="../../backend/uploads/<?php echo $event['file']; ?>" target="_blank" class="btn orange">
 📄 View / Download Event Document
 </a>
 <?php } ?>
@@ -151,6 +152,12 @@ if(empty($students)){
 
 </div>
 
+<?php if(isset($_GET['joined'])){ ?>
+    <a href="<?php echo $event['whatsappLink']; ?>" target="_blank">
+        👉 Join WhatsApp Group
+    </a>
+<?php } ?>
+
 <!-- REGISTER BUTTON -->
 <div style="margin-top:22px;">
 <a href="registerforevent.php?id=<?php echo $event['id']; ?>" class="btn orange">
@@ -160,6 +167,19 @@ Register Now
 
 </div>
 </section>
+
+<script>
+    function toggleSidebar(){
+  let sidebar = document.getElementById("sidebar");
+  sidebar.style.left = (sidebar.style.left === "0px") ? "-220px" : "0px";
+}
+
+function toggleProfile(){
+  let box = document.getElementById("profileBox");
+  box.style.display = (box.style.display === "block") ? "none" : "block";
+}
+</script>
+
 
 <footer class="footer">
 <div class="container">

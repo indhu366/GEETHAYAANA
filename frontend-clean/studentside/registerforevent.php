@@ -1,5 +1,5 @@
 <?php
-$conn = new mysqli("localhost","root","","geethayana",3307);
+include("../../backend/db.php");
 
 if ($conn->connect_error) {
     die("Connection failed");
@@ -30,24 +30,24 @@ $registered = $countRow['total'];
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Event Registration | GeethsConnect</title>
+<title>Event Registration</title>
 <link rel="stylesheet" href="../common/css/style.css">
 </head>
 
 <body>
 
-<header class="navbar">
-<div class="container nav-flex">
-<h2 class="logo">GeethsConnect</h2>
+<div class="topbar">
+  <span class="menu-btn" onclick="toggleSidebar()">☰</span>
 
-<nav class="nav-links">
-<a href="dashboard.html">Dashboard</a>
-<a href="events.php">Events</a>
-<a href="gallery.html">Gallery</a>
-<a class="btn outline" href="index.html">Logout</a>
-</nav>
+  <h2 class="logo">GEETHAYAANA 2026</h2>
 </div>
-</header>
+
+<div class="sidebar" id="sidebar">
+  <a href="studentdashboard.php">🏠 Dashboard</a>
+  <a href="events.php">🎯 Events</a>
+  <a href="gallery.html">🖼️ Gallery</a>
+  <a href="myevents.php">📅 My Events</a>
+</div>
 
 <section class="container" style="padding:30px 0;">
 <div class="card" style="padding:25px;">
@@ -76,7 +76,8 @@ if($event['participationType'] == "individual"){
 
 <br>
 
-<form action="/GEETHAYAANA/backend/register.php" method="POST" onsubmit="return validateForm()">
+<form id="registerForm" onsubmit="return validateForm()"
+onkeydown="return event.key !== 'Enter';">
 
 <input type="hidden" name="eventId" value="<?php echo $event['id']; ?>">
 <input type="hidden" name="eventTitle" value="<?php echo $event['title']; ?>">
@@ -85,7 +86,8 @@ if($event['participationType'] == "individual"){
 <input type="hidden" name="participationType" value="<?php echo $event['participationType']; ?>">
 
 <label id="countLabel">Number of Participants</label>
-<input type="number" name="count" id="participantCount" min="1" oninput="generateFields()" required>
+<input type="number" name="count" id="participantCount" min="1"
+oninput="generateFields()" required>
 
 <div id="participantFields"></div>
 <br>
@@ -135,7 +137,7 @@ if(!count || count <= 0){
 
 container.innerHTML = "";
 
-/* INDIVIDUAL EVENT */
+/* INDIVIDUAL */
 if(participationType === "individual"){
 
   if(registered >= maxParticipants){
@@ -150,18 +152,6 @@ if(participationType === "individual"){
     <label>Name</label>
     <input type="text" name="name1" required>
 
-    <label>USN</label>
-    <input type="text" name="usn1"
-     pattern="4GW[0-9]{2}[A-Za-z]{2}[0-9]{3}"
-     title="Format: 4GW12CS123"
-     required>
-
-    <label>Phone</label>
-    <input type="text" name="phone1" pattern="[0-9]{10}" maxlength="10" required>
-
-    <label>Email</label>
-    <input type="email" name="email1" required>
-
     <label>Department</label>
     <select name="dept1" required>
       <option value="">Select Department</option>
@@ -171,7 +161,30 @@ if(participationType === "individual"){
       <option>CSE(AI&ML)</option>
       <option>ISE</option>
       <option>AI&DS</option>
+      <option>MBA</option>
     </select>
+
+    <label>Semester</label>
+    <select name="sem" required>
+      <option value="">Select Semester</option>
+      <option value="1">Sem 1</option>
+      <option value="2">Sem 2</option>
+      <option value="3">Sem 3</option>
+      <option value="4">Sem 4</option>
+      <option value="5">Sem 5</option>
+      <option value="6">Sem 6</option>
+      <option value="7">Sem 7</option>
+      <option value="8">Sem 8</option>
+    </select>
+
+    <label>USN</label>
+    <input type="text" name="usn1" required>
+
+    <label>Phone</label>
+    <input type="text" name="phone1" pattern="[0-9]{10}" maxlength="10" required>
+
+    <label>Email</label>
+    <input type="email" name="email1" required>
   </div>
   `;
   return;
@@ -193,14 +206,18 @@ if(count > maxTeam){
   return;
 }
 
-/* TEAM FIELDS */
+/* TEAM */
 for(let i=1;i<=count;i++){
 
 let html = `<div style="margin-top:15px;">`;
 
 if(i === 1){
 
-html += `<h3>Team Leader</h3>
+html += `
+<h3>Team Leader</h3>
+
+<label>Team Name</label>
+<input type="text" name="team_name" required>
 
 <label>Name</label>
 <input type="text" name="name${i}" required>
@@ -214,36 +231,35 @@ html += `<h3>Team Leader</h3>
 <option>EEE</option>
 <option>ISE</option>
 <option>AI&DS</option>
+</select>
 
-<label for="semester">Semester</label>
-    <select name="semester" id="semester" required>
-        <option value="">Select Semester</option>
-        <option value="1">Sem 1</option>
-        <option value="2">Sem 2</option>
-        <option value="3">Sem 3</option>
-        <option value="4">Sem 4</option>
-        <option value="5">Sem 5</option>
-        <option value="6">Sem 6</option>
-        <option value="7">Sem 7</option>
-        <option value="8">Sem 8</option>
+<label>Semester</label>
+<select name="sem" required>
+<option value="">Select Semester</option>
+<option value="1">Sem 1</option>
+<option value="2">Sem 2</option>
+<option value="3">Sem 3</option>
+<option value="4">Sem 4</option>
+<option value="5">Sem 5</option>
+<option value="6">Sem 6</option>
+<option value="7">Sem 7</option>
+<option value="8">Sem 8</option>
+</select>
 
 <label>USN</label>
-<input type="text" name="usn${i}"
-pattern="4GW[0-9]{2}[A-Za-z]{2}[0-9]{3}"
-required>
+<input type="text" name="usn${i}" required>
 
 <label>Phone</label>
 <input type="text" name="phone${i}" pattern="[0-9]{10}" maxlength="10" required>
 
 <label>Email</label>
 <input type="email" name="email${i}" required>
-
-</select>
 `;
 
 }else{
 
-html += `<h3>Member ${i}</h3>
+html += `
+<h3>Member ${i}</h3>
 
 <label>Name</label>
 <input type="text" name="name${i}" required>
@@ -257,25 +273,20 @@ html += `<h3>Member ${i}</h3>
 <option>CSE(AI&ML)</option>
 <option>ISE</option>
 <option>AI&DS</option>
+</select>
 
 <label>USN</label>
-<input type="text" name="usn${i}"
-pattern="4GW[0-9]{2}[A-Za-z]{2}[0-9]{3}"
-required>
-
-
-</select>
+<input type="text" name="usn${i}" required>
 `;
 }
 
 html += `</div>`;
 container.innerHTML += html;
-
 }
 
 }
 
-/* FINAL VALIDATION */
+/* VALIDATION */
 function validateForm() {
   const container = document.getElementById("participantFields");
 
@@ -283,9 +294,61 @@ function validateForm() {
     alert("❌ Please fill participant details");
     return false;
   }
-
   return true;
 }
+
+function toggleSidebar(){
+  let sidebar = document.getElementById("sidebar");
+  sidebar.style.left = (sidebar.style.left === "0px") ? "-220px" : "0px";
+}
+
+document.getElementById("registerForm").addEventListener("submit", function(e){
+
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    fetch("../../backend/register.php", {   // ✅ safer path
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.text())   // ✅ IMPORTANT CHANGE
+    .then(data => {
+
+        console.log("SERVER RESPONSE:", data); // 🔥 DEBUG
+
+        let json;
+
+        try {
+            json = JSON.parse(data);
+        } catch(e){
+            alert("❌ Server Error:\n" + data);  // shows real error
+            return;
+        }
+
+        if(json.status === "success"){
+
+            alert("✅ Registration Successful");
+
+            if(json.whatsappLink){
+                window.open(json.whatsappLink, "_blank");
+            }
+
+            setTimeout(() => {
+                window.location.href = "events.php";
+            }, 1000);
+
+        } else {
+            alert("❌ " + json.message);
+        }
+
+    })
+    .catch(err => {
+        console.log(err);
+        alert("❌ Network error");
+    });
+
+});
 
 </script>
 

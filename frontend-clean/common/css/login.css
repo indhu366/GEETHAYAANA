@@ -8,14 +8,13 @@
 body {
   margin: 0;
   min-height: 100vh;
-
   display: flex;
   justify-content: center;
   align-items: center;
 
-  background: url("../images/logo.png") no-repeat center;
+  background: url("../images/gy26.png") no-repeat center;
   background-size: contain;   /* full image always visible */
-  background-color: #ffffff;  /* fills empty space nicely */
+  background-color: #f2f0f0;  /* fills empty space nicely */
 }
 
 @media (min-width: 768px) {
@@ -140,4 +139,41 @@ body {
   background: #010107;
   color: white;
   padding: 10px;
+}
+
+.portal-closed{
+  position: fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+
+  backdrop-filter: blur(8px);   /* 🔥 THIS BLURS EVERYTHING */
+  background: rgba(0,0,0,0.4);
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  z-index:9999;
+}
+
+/* CENTER BOX */
+.message-box{
+  background: rgba(255,255,255,0.2);
+  padding:50px;
+  border-radius:15px;
+  text-align:center;
+  color:white;
+  backdrop-filter: blur(10px);
+}
+
+/* BIG TEXT */
+.message-box h1{
+  font-size:50px;
+  margin-bottom:15px;
+}
+
+.message-box p{
+  font-size:20px;
 }

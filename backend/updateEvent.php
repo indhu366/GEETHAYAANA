@@ -1,24 +1,49 @@
 <?php
-include "../../backend/db.php";
-
+include __DIR__ . "/db.php";
 /* GET DATA FROM FORM */
 $id = $_POST['id'];
 $title = $_POST['title'];
 $date = $_POST['date'];
 $time = $_POST['time'];
 $venue = $_POST['venue'];
+$whatsappLink = $_POST['whatsappLink'] ?? "";
+$fileName = $_POST['oldFile']; // keep old file
+$status = $_POST['status'];
 
 /* 🔍 GET OLD DATA (IMPORTANT) */
 $old = $conn->query("SELECT * FROM events WHERE id='$id'");
 $oldData = $old->fetch_assoc();
+if(isset($_FILES['image']) && $_FILES['image']['error'] == 0){
+
+    $allowed = ['jpg','jpeg','png','gif','pdf'];
+    $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+
+    if(!in_array($ext, $allowed)){
+        die("Only images & PDF allowed");
+    }
+
+    $fileName = time() . "_" . $_FILES['image']['name'];
+
+    move_uploaded_file(
+        $_FILES['image']['tmp_name'],
+        __DIR__ . "/uploads/" . $fileName
+    );
+}
 
 $oldVenue = $oldData['venue'];
 
 /* ✅ UPDATE EVENT */
 $conn->query("
-    UPDATE events 
-    SET title='$title', date='$date', time='$time', venue='$venue'
-    WHERE id='$id'
+    UPDATE events
+SET 
+title='$title', 
+date='$date', 
+time='$time', 
+venue='$venue',
+whatsappLink='$whatsappLink',
+file='$fileName',
+status='$status' 
+WHERE id='$id'
 ");
 
 $changes = "";
@@ -38,16 +63,29 @@ if($oldData['time'] != $time){
 if($oldData['venue'] != $venue){
     $changes .= "<p>🔹 Venue: {$oldData['venue']} → $venue</p>";
 }
+if($oldData['whatsappLink'] != $whatsappLink){
+    $changes .= "<p>🔹 WhatsApp Link Updated</p>";
+}
+if($oldData['file'] != $fileName){
+    $changes .= "<p>🔹 File Updated</p>";
+}
+
+if($oldData['status'] != $status){
+    $changes .= "<p>🔹 Status: {$oldData['status']} → $status</p>";
+}
 
 /* 🔥 CHECK: VENUE CHANGED OR NOT */
 if(
     $oldData['title'] != $title ||
     $oldData['date'] != $date ||
     $oldData['time'] != $time ||
-    $oldData['venue'] != $venue
+    $oldData['venue'] != $venue ||
+    $oldData['whatsappLink'] != $whatsappLink ||
+    $oldData['file'] != $fileName ||
+    $oldData['status'] != $status 
 ){
 
-    include "../../backend/sendEmail.php"; // 🔥 email function
+    include __DIR__ . "/sendEmail.php"; // 🔥 email function
 
     $eventId = $id;
 
@@ -71,7 +109,7 @@ if(
 <h4 style='color:red;'>⚠️ Changes Made:</h4>
 
 $changes
-
+ 
 <br>
 <p><b>Updated Details:</b></p>
 <p>Date: $date</p>
@@ -93,6 +131,6 @@ $changes
 }
 
 /* REDIRECT BACK */
-echo "<script>alert('Event updated & notifications sent'); window.location.href='../adminside/eventlist.php';</script>";
+echo "<script>alert('Event updated & notifications sent'); window.location.href='/GEETHAYAANA/frontend-clean/adminside/eventlist.php';</script>";
 exit();
 ?>

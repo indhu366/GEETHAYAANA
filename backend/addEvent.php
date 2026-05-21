@@ -16,13 +16,18 @@ $loggedAdmin = $_SESSION['adminEmail'];
 include "db.php";
 
 /* GET DATA */
-$title = $_POST['title'];
+if($_POST['title'] == "Other"){
+    $title = $_POST['other_event_name'];
+} else {
+    $title = $_POST['title'];
+}
 $type = $_POST['type'];
 $date = $_POST['date'];
-$time = $_POST['time'];
+$time = $_POST['time'] . " " . $_POST['am_pm'];
 $venue = $_POST['venue'];
 $status = $_POST['status'];
 $description = $_POST['description'];
+$whatsappLink = $_POST['whatsappLink'] ?? "";
 $participationType = $_POST['participationType'];
 
 $teamSize = $_POST['teamSize'] ?? 0;
@@ -45,22 +50,36 @@ $studentData = "";
 if(!empty($_POST['studentName'])){
     for($i=0;$i<count($_POST['studentName']);$i++){
         if($_POST['studentName'][$i] != ""){
-            $studentData .= $_POST['studentName'][$i]." - ".$_POST['studentUSN'][$i].", ";
+            $studentData .= $_POST['studentName'][$i]." (".$_POST['studentPhone'][$i]."), ";
         }
     }
 }
 
 /* FILE */
-$fileName = "";
-if(isset($_FILES['eventFile']) && $_FILES['eventFile']['name'] != ""){
-    $fileName = time()."_".$_FILES['eventFile']['name'];
-    move_uploaded_file($_FILES['eventFile']['tmp_name'], "uploads/".$fileName);
-}
+$fileName = NULL;
 
+if(isset($_FILES['image']) && $_FILES['image']['error'] == 0){
+
+    $allowed = ['jpg','jpeg','png','gif','pdf'];
+
+    $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+
+    if(!in_array($ext, $allowed)){
+        echo json_encode(["status"=>"error","message"=>"Only images and PDF allowed"]);
+exit;
+    }
+
+    $fileName = time() . "_" . $_FILES['image']['name'];
+
+    move_uploaded_file(
+        $_FILES['image']['tmp_name'],
+        __DIR__ . "/uploads/" . $fileName
+    );
+}
 /* INSERT */
 $stmt = $conn->prepare("INSERT INTO events
-(title,type,date,time,venue,status,description,participationType,teamSize,minTeamSize,maxParticipants,maxTeams,faculty,students,file,createdBy)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+(title,type,date,time,venue,status,description,whatsappLink,participationType,teamSize,minTeamSize,maxParticipants,maxTeams,faculty,students,file,createdBy)
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
 if(!$stmt){
     echo json_encode(["status"=>"error","message"=>$conn->error]);
@@ -68,7 +87,7 @@ if(!$stmt){
 }
 
 $stmt->bind_param(
-    "ssssssssiiiissss",
+    "sssssssssiiiissss",
     $title,
     $type,
     $date,
@@ -76,6 +95,7 @@ $stmt->bind_param(
     $venue,
     $status,
     $description,
+    $whatsappLink, 
     $participationType,
     $teamSize,
     $minTeamSize,

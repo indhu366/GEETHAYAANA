@@ -1,6 +1,11 @@
 <?php
 session_start();
 
+
+if(!isset($_SESSION['isSuperAdmin'])){
+    die("❌ Access denied");
+}
+
 if(!isset($_SESSION['adminEmail'])){
     die("❌ Please login first");
 }
@@ -18,18 +23,21 @@ if(!isset($_SESSION['adminEmail'])){
 
 <body>
 
-<header class="navbar">
-<div class="container nav-flex">
-<h2 class="logo">GEETHAYAANA2026</h2>
+<div class="topbar">
 
-<nav class="nav-links">
-<a href="admindashboard.php">Dashboard</a>
-<a href="addevent.php">Add Event</a>
-<a href="uploadphotos.html">Upload Photos</a>
-<a href="/GEETHAYAANA/frontend-clean/studentside/login.html">Logout</a>
-</nav>
+  <!-- ☰ MENU -->
+  <span class="menu-btn" onclick="toggleSidebar()">☰</span>
+
+  <h2 class="logo-text">GEETHAYAANA 2026</h2>
+
 </div>
-</header>
+
+<div id="sidebar" class="sidebar">
+  <a href="admindashboard.php">🏠 Dashboard</a>
+  <a href="addevent.php">➕ Add Event</a>
+  <a href="uploadphotos.html">🖼️ Upload Photos</a>
+  <a href="/GEETHAYAANA/frontend-clean/studentside/login.html">Logout</a>
+</div>
 
 <section class="container" style="padding:30px 0;">
 <div class="card">
@@ -45,8 +53,26 @@ if(!isset($_SESSION['adminEmail'])){
 <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
 
 <div>
-<label>Event Title</label>
-<input type="text" name="title" required>
+<label>Event Name</label>
+
+<select id="eventSelect" name="title" onchange="toggleOtherInput()" required>
+  <option value="">Select Event</option>
+  <option value="Collage">Collage</option>
+  <option value="Anthyakshari(Hindi)">Anthyakshari(Hindi)</option>
+  <option value="Eassy Writing(English)">Eassy Writing(English)</option>
+  <option value="Coking Without fire">Cooking Without fire</option>
+  <option value="Anthyakshari(Kannada)">Anthyakshari(English)</option>
+  <option value="Essay Writting(Kannada)">Essay Writting(Kannada)</option>
+  <option value="Pencil Sketch">Pencil Sketch</option>
+  <option value="Ek Minute">Ek Minute</option>
+    <option value="Rangoli">Rangoli</option>
+  <option value="Other">Other</option>
+</select>
+
+<div id="otherEventDiv" style="display:none; margin-top:10px;">
+  <input type="text" name="other_event_name" placeholder="Enter event name">
+</div>
+
 </div>
 
 <div>
@@ -70,6 +96,12 @@ if(!isset($_SESSION['adminEmail'])){
 <div>
 <label>Time</label>
 <input type="time" name="time" required>
+
+<select name="am_pm" required>
+  <option value="">AM/PM</option>
+  <option value="AM">AM</option>
+  <option value="PM">PM</option>
+</select>
 </div>
 
 </div>
@@ -105,19 +137,19 @@ if(!isset($_SESSION['adminEmail'])){
 <!-- INDIVIDUAL -->
 <div id="individualDiv" style="display:none;">
 <label>Max Participants</label>
-<input type="number" name="maxParticipants" min="1">
+<input type="number" name="maxParticipants" min="1" max="99" oninput="validateNumber(this)">
 </div>
 
 <!-- TEAM -->
 <div id="teamDiv" style="display:none;">
 <label>Min Team Size</label>
-<input type="number" name="minTeamSize" min="1">
+<input type="number" name="minTeamSize" min="1" max="99" oninput="validateNumber(this)">
 
 <label>Max Team Size</label>
-<input type="number" name="teamSize" min="1">
+<input type="number" name="teamSize" min="1" max="99" oninput="validateNumber(this)">
 
 <label>Max Number of Teams</label>
-<input type="number" name="maxTeams" min="1">
+<input type="number" name="maxTeams" min="1" max="99" oninput="validateNumber(this)">
 </div>
 
 <div style="margin-top:16px">
@@ -125,15 +157,18 @@ if(!isset($_SESSION['adminEmail'])){
 <textarea name="description"></textarea>
 </div>
 
+<label>WhatsApp Group Link</label>
+<input type="url" name="whatsappLink" placeholder="Enter WhatsApp group link(optional)">
+
 <div style="margin-top:16px">
 <label>Upload Event Poster</label>
-<input type="file" name="eventFile">
+<input type="file" name="image" accept="image/*,.pdf" placeholder="Upload event poster(optional)">
 </div>
 
 <!-- FACULTY -->
 <div style="margin-top:20px">
 <label>No. of Faculty Coordinators</label>
-<input type="number" id="facultyCount" min="0" oninput="generateFacultyFields()">
+<input type="number" id="facultyCount"  min="0" oninput="generateFacultyFields()" required >
 </div>
 
 <div id="facultyFields"></div>
@@ -142,7 +177,7 @@ if(!isset($_SESSION['adminEmail'])){
 <!-- STUDENTS -->
 <div style="margin-top:20px">
 <label>No. of Student Coordinators</label>
-<input type="number" id="studentCount" min="0" oninput="generateStudentFields()">
+<input type="number" id="studentCount" min="0" oninput="generateStudentFields()" require>
 </div>
 
 <div id="studentFields"></div>
@@ -189,7 +224,8 @@ container.innerHTML += `
 <input type="text" name="facultyName[]" required>
 
 <label>Phone</label>
-<input type="text" name="facultyPhone[]" required>
+  <input type="text" name="facultyPhone[]" pattern="[0-9]{10}" maxlength="10" required>
+
 </div>`;
 }
 }
@@ -206,14 +242,12 @@ container.innerHTML += `
 <label>Student ${i} Name</label>
 <input type="text" name="studentName[]">
 
-<label>USN</label>
-<input type="text" name="studentUSN[]">
 
 <label>Dept</label>
 <input type="text" name="studentDept[]">
 
 <label>Phone</label>
-<input type="text" name="studentPhone[]">
+    <input type="text" name="studentPhone[]" pattern="[0-9]{10}" maxlength="10" required>
 </div>`;
 }
 }
@@ -232,14 +266,36 @@ document.getElementById("addEventForm").addEventListener("submit", function(e){
 
     e.preventDefault(); // ❌ stop redirect
 
+    const type = document.getElementById("ptype").value;
+
+if(type === "individual"){
+    let max = document.querySelector("[name='maxParticipants']").value;
+
+    if(max <= 0){
+        alert("❌ Max participants cannot be 0 or negative");
+        return; // STOP FORM
+    }
+}
+
+if(type === "team"){
+    let max = document.querySelector("[name='maxTeams']").value;
+
+    if(max <= 0){
+        alert("❌ Max teams cannot be 0 or negative");
+        return; // STOP FORM
+    }
+}
+
     const formData = new FormData(this);
 
-    fetch("/GEETHAYAANA/backend/addEvent.php", {
+    fetch("../../backend/addEvent.php", {
         method: "POST",
         body: formData
     })
     .then(res => res.json())
     .then(data => {
+
+        console.log(data); 
 
         if(data.status === "success"){
             alert("✅ Event Published Successfully");
@@ -264,6 +320,33 @@ document.getElementById("addEventForm").addEventListener("submit", function(e){
 });  
 
 });
+
+function toggleSidebar(){
+  document.getElementById("sidebar").classList.toggle("active");
+}
+
+function toggleOtherInput(){
+  const select = document.getElementById("eventSelect");
+  const otherDiv = document.getElementById("otherEventDiv");
+
+  if(select.value === "Other"){
+    otherDiv.style.display = "block";
+  } else {
+    otherDiv.style.display = "none";
+  }
+}
+
+function validateNumber(input){
+
+    // allow only digits
+    input.value = input.value.replace(/[^0-9]/g, '');
+
+    // block 0
+    if(input.value == "0"){
+        alert("❌ Value must be greater than 0");
+        input.value = "";
+    }
+}
 
 </script>
 

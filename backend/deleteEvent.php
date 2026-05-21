@@ -1,16 +1,20 @@
 <?php
 session_start();
-$loggedAdmin = $_SESSION['adminEmail'];
+include("db.php");
 
-$conn = new mysqli("localhost", "root", "", "geethayana",3307);
+$isSuperAdmin = $_SESSION['isSuperAdmin'] ?? false;
+$loggedAdmin = $_SESSION['adminEmail'] ?? '';
+
+
 
 $id = $_GET['id'];
 
-$check = $conn->query("SELECT * FROM events WHERE id='$id'");
+/* GET EVENT */
+$check = $conn->query("SELECT createdBy FROM events WHERE id='$id'");
 $row = $check->fetch_assoc();
 
 /* 🔐 SECURITY CHECK */
-if($row['createdBy'] != $loggedAdmin){
+if(!$isSuperAdmin && $row['createdBy'] != $loggedAdmin){
     echo json_encode(["status"=>"error","message"=>"Not authorized"]);
     exit();
 }

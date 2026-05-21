@@ -1,5 +1,5 @@
 <?php
-$conn = new mysqli("localhost", "root", "", "geethayana");
+include("db.php");
 
 $eventId = $_GET['eventId'];
 

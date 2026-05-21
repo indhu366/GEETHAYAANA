@@ -1,10 +1,21 @@
 <?php
 session_start();
-if(!isset($_SESSION['userEmail'])){
+if(!isset($_SESSION['adminEmail'])){
     header("Location: /GEETHAYAANA/frontend-clean/studentside/login.html");
     exit();
 }
-$conn = new mysqli("localhost","root","","geethayana",3307);
+$isSuperAdmin = $_SESSION['isSuperAdmin'] ?? false;
+include("../../backend/db.php");
+
+$email = $_SESSION['adminEmail'];
+
+$res = $conn->query("SELECT * FROM users WHERE email='$email'");
+
+if($res && $res->num_rows > 0){
+    $admin = $res->fetch_assoc();
+} else {
+    $admin = ['name' => 'Admin', 'email' => $email];
+}
 
 $res1 = $conn->query("SELECT COUNT(*) as total FROM events");
 $row1 = $res1->fetch_assoc();
@@ -13,6 +24,7 @@ $totalEvents = $row1['total'];
 $res2 = $conn->query("SELECT COUNT(*) as total FROM registrations");
 $row2 = $res2->fetch_assoc();
 $totalStudents = $row2['total'];
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -26,6 +38,15 @@ $totalStudents = $row2['total'];
 <style>
 
 /* ✅ LOGO WITH IMAGE */
+
+.profile-dropdown.show{
+  display:block;
+}
+
+.topbar{
+  position:relative;
+}
+
 .logo-box{
 display: flex;
 align-items: center;
@@ -39,9 +60,12 @@ mix-blend-mode: multiply;
 }
 
 .logo-text{
-font-size: 22px;
-font-weight: bold;
-color: #F97316;
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:22px;
+  font-weight:bold;
+  color:#F97316;
 }
 
 /* ✅ 2 CARDS PER ROW */
@@ -68,6 +92,69 @@ height:100% !important;
 max-width:1200px !important;
 }
 
+/* SIDEBAR DEFAULT */
+.sidebar{
+  position:fixed;
+  top:0;
+  left:-220px;
+  width:200px;
+  height:100%;
+  background:#222;
+  padding-top:60px;
+  transition:0.3s;
+  z-index:1000;
+}
+
+/* ✅ WHEN ACTIVE */
+.sidebar.active{
+  left:0;
+}
+
+/* PROFILE DROPDOWN */
+.profile-dropdown{
+  display:none;
+}
+
+/* ✅ WHEN CLICKED */
+.profile-dropdown.show{
+  display:block;
+}
+
+/* PROFILE ICON POSITION */
+.profile{
+  position:absolute;
+  right:20px;
+  cursor:pointer;
+  font-size:20px;
+}
+
+.menu-btn{
+  font-size:24px;
+  cursor:pointer;
+  color:#fff;
+  padding:10px;
+}
+
+/* Sidebar hidden */
+.sidebar{
+  position:fixed;
+  top:0;
+  left:-220px;
+  width:200px;
+  height:100%;
+  background:#222;
+  padding-top:60px;
+  transition:0.3s;
+  z-index:1000;
+}
+
+/* When opened */
+.sidebar.active{
+  left:0;
+}
+
+
+
 </style>
 
 </head>
@@ -75,26 +162,35 @@ max-width:1200px !important;
 <body>
 
 <!-- Navbar -->
-<header class="navbar">
-<div class="container nav-flex">
+<div class="topbar">
 
-<!-- ✅ UPDATED LOGO -->
-<div class="logo-box">
-<!---<img src="logo.png" class="logo-img"> -->
-<h2 class="logo-text">GEETHAYAANA2026</h2>
+  <!-- ☰ MENU -->
+  <span class="menu-btn" onclick="toggleSidebar()">☰</span>
+
+  <h2 class="logo-text">GEETHAYAANA 2026</h2>
+
+  <!-- PROFILE -->
+  <div class="profile" onclick="toggleProfile()">
+    👤
+    <div class="profile-dropdown" id="profileBox">
+      <p><strong><?php echo $admin['name']; ?></strong></p>
+      <p><?php echo $admin['email']; ?></p>
+      
+
+      
+      <a href="/GEETHAYAANA/frontend-clean/studentside/login.html">Logout</a>
+    </div>
+  </div>
+
 </div>
 
-<nav class="nav-links">
-<a href="admindashboard.php">Dashboard</a>
-<a href="addevent.php">Add Event</a>
-<a href="uploadphotos.html">Upload Photos</a>
-<a href="/GEETHAYAANA/frontend-clean/studentside/login.html">Logout</a>
-</nav>
-
+<div id="sidebar" class="sidebar">
+  <a href="admindashboard.php">🏠 Dashboard</a>
+  <a href="addevent.php">➕ Add Event</a>
+  <a href="uploadphotos.html">🖼️ Upload Photos</a>
 </div>
-</header>
 
-<!-- Header -->
+
 <section class="container" style="padding:30px 0;">
 <div class="card">
 <h1 style="font-size:32px;margin-bottom:8px;">Admin Dashboard 👨‍💻</h1>
@@ -103,6 +199,32 @@ Manage events and download participant data from here.
 </p>
 </div>
 </section>
+
+<?php if($isSuperAdmin == true){ ?>
+
+<section class="container">
+<div class="card" style="text-align:center; margin-bottom:20px;">
+
+<h2>🔐 Portal Control</h2>
+
+<form method="POST" action="../../backend/togglePortal.php">
+
+    <button type="submit" name="action" value="open"
+    style="padding:10px 20px; margin:10px; background:green; color:white; border:none; border-radius:6px;">
+        🟢 Open Portal
+    </button>
+
+    <button type="submit" name="action" value="close"
+    style="padding:10px 20px; margin:10px; background:red; color:white; border:none; border-radius:6px;">
+        🔴 Close Portal
+    </button>
+
+</form>
+
+</div>
+</section>
+
+<?php } ?>
 
 <!-- ROW 1 -->
 <section class="container">
@@ -182,18 +304,44 @@ Students registered
 
 <!-- Footer -->
 <footer class="footer">
-<div class="container">
-© 2026 GEETHAYAANA | Admin Dashboard
-</div>
+  <div class="container" style="
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:20px;
+    padding:20px 0;
+  ">
+
+    <!-- LEFT -->
+    <div style="text-align:left;">
+      <strong>Faculty Support</strong><br>
+      Mr. Mahadevappa N (System Analyst)<br>
+      Dr. Sunita Adarsh Yadwad (Professor)<br>
+      Dr. Vishwesh J (Associate Professor)<br>
+      Dr. Rajath A N (Associate Professor)
+  
+    </div>
+
+    <!-- CENTER -->
+    <div style="text-align:center; flex:1; min-width:200px;">
+      © 2026 GEETHAYAANA
+    </div>
+
+    <!-- RIGHT -->
+    <div style="text-align:right;">
+      <strong>Developed BY</strong><br>
+      R. Indu (9381627097)<br>
+      G. Shalini Priya (8247697549)
+    </div>
+
+  </div>
 </footer>
 
 <script>
 
 /* ADMIN CHECK */
-const role = localStorage.getItem("role");
-if(!role || role !== "admin"){
-window.location.href = "../studentside/login.html";
-}
+
 
 /* COUNTER */
 function animateCounter(id, value){
@@ -223,10 +371,10 @@ const data = await res.json();
 
 console.log(data); // debug
 
-const departments = ["ECE","CSE","CSE(AI&ML)","EEE","ISE","AI&DS"];
+const departments = ["ECE","CSE","CSE(AI&ML)","EEE","ISE","AI&DS","MBA"];
 
 const values = departments.map(dep=>{
-    const found = data.find(d => d.department === dep);
+    const found = data.find(d => d.department.trim().toUpperCase() === dep);
     return found ? found.total : 0;
 });
 
@@ -244,7 +392,8 @@ backgroundColor:[
 "#FFB6C1", // CSE(AI&ML)
 "#FFD700", // EEE
 "#808080", // ISE
-"#800080"  // AI&DS
+"#800080" , // AI&DS
+"#808000"  // MBA
 ],
 borderRadius:8,
 barThickness:50
@@ -266,6 +415,16 @@ console.log(err);
 }
 
 loadBranchGraph();
+
+
+
+function toggleSidebar(){
+  document.getElementById("sidebar").classList.toggle("active");
+}
+
+function toggleProfile(){
+  document.getElementById("profileBox").classList.toggle("show");
+}
 
 
 </script>
